@@ -25,6 +25,10 @@ export const useAlertsStore = create<AlertsState>((set, get) => ({
   filter: {},
 
   async loadFirstPage(home_id) {
+    // Concurrency guard: if a load is already in-flight, no-op.
+    // Without this, rapid filter changes + pull-to-refresh could race and the
+    // later-resolving request could overwrite the earlier one with stale data.
+    if (get().loading) return;
     set({ loading: true, error: null, items: [], cursor: null });
     try {
       const f = get().filter;
