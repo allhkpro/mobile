@@ -67,7 +67,7 @@ export default function SecurityScreen() {
         data={items}
         keyExtractor={(i) => i.id}
         renderItem={({ item }) => (
-          <AlertCard item={item} onPress={() => router.push(`/alert/${item.id}` as any)} />
+          <AlertCard item={item} onPress={() => router.push({ pathname: "/alert/[id]", params: { id: item.id } })} />
         )}
         refreshControl={
           <RefreshControl refreshing={loading && items.length === 0} onRefresh={() => loadFirstPage(homeId)} tintColor="#fff" />

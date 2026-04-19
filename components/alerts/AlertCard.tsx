@@ -1,4 +1,5 @@
-import { View, Text, StyleSheet, TouchableOpacity, Image } from "react-native";
+import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
+import { Image } from "expo-image";
 import { Colors } from "../../constants/theme";
 import { AlertListItem } from "../../services/alerts";
 
@@ -40,7 +41,7 @@ export default function AlertCard({ item, onPress }: Props) {
     <TouchableOpacity onPress={onPress} style={styles.container}>
       <View style={styles.thumb}>
         {item.frame_thumbnail_url ? (
-          <Image source={{ uri: item.frame_thumbnail_url }} style={styles.thumbImage} resizeMode="cover" />
+          <Image source={{ uri: item.frame_thumbnail_url }} style={styles.thumbImage} contentFit="cover" />
         ) : (
           <View style={styles.thumbPlaceholder}>
             <Text style={styles.thumbPlaceholderText}>无缩略图</Text>
