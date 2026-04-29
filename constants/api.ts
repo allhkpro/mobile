@@ -21,6 +21,13 @@ export const Endpoints = {
     me: "/api/v1/auth/me",
   },
   dashboard: (homeId: string) => `/api/v1/homes/${homeId}/dashboard`,
+  orders: {
+    list: "/api/v1/orders",
+    detail: (id: string) => `/api/v1/orders/${id}`,
+    create: "/api/v1/orders",
+    cancel: (id: string) => `/api/v1/orders/${id}/cancel`,
+    pay: (id: string) => `/api/v1/orders/${id}/pay`,
+  },
   suggestion: (id: string) => `/api/v1/ai/suggestions/${id}`,
   rooms: (homeId: string) => `/api/v1/homes/${homeId}/rooms`,
   devices: (roomId: string) => `/api/v1/rooms/${roomId}/devices`,
