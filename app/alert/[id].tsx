@@ -95,6 +95,16 @@ export default function AlertDetailScreen() {
         </View>
       </View>
 
+      <TouchableOpacity
+        style={styles.repairBtn}
+        onPress={() => router.push({
+          pathname: "/(service)/new",
+          params: { type: "repair", context_alert_id: alert.id },
+        })}
+      >
+        <Text style={styles.repairBtnText}>🔧 联系师傅维修</Text>
+      </TouchableOpacity>
+
       <LabelModal
         visible={modalType !== null}
         labelType={modalType}
@@ -130,6 +140,18 @@ const styles = StyleSheet.create({
   btnMiss: { backgroundColor: "rgba(255,149,0,0.2)" },
   btnWrong: { backgroundColor: "rgba(10,132,255,0.2)" },
   btnText: { color: "#fff", fontSize: 14 },
+  repairBtn: {
+    backgroundColor: "rgba(78,212,255,0.1)",
+    borderWidth: 1,
+    borderColor: "#4ed4ff",
+    padding: 14,
+    borderRadius: 10,
+    alignItems: "center",
+    marginHorizontal: 16,
+    marginTop: 16,
+    marginBottom: 24,
+  },
+  repairBtnText: { color: "#4ed4ff", fontSize: 14, fontWeight: "600" },
   center: { flex: 1, alignItems: "center", justifyContent: "center" },
   err: { color: "#FF3B30", fontSize: 14 },
 });
