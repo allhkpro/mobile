@@ -55,6 +55,26 @@ export interface OrderDetail {
   payments: PaymentBrief[];
 }
 
+/**
+ * Shape returned by `POST /api/v1/orders` (backend `OrderOut` model).
+ *
+ * Distinct from `OrderDetail` — at creation time the order has no engineer
+ * assigned (it goes into the pool) and no payments yet, so the response
+ * deliberately omits those fields. Use `getOrder(id)` afterwards to fetch
+ * the full `OrderDetail` once a师傅 accepts.
+ */
+export interface OrderCreated {
+  id: string;
+  home_id: string;
+  type: OrderType;
+  description: string;
+  status: OrderStatus;
+  engineer_id: string | null;
+  quoted_amount: number | null;
+  payment_status: PaymentStatus;
+  created_at: string;
+}
+
 export async function listOrders(homeId: string, status?: OrderStatus, cursor?: string) {
   const params: Record<string, string> = { home_id: homeId };
   if (status) params.status = status;
@@ -78,8 +98,8 @@ export async function createOrder(body: {
   preferred_time?: string;
   context_alert_id?: string;
 }) {
-  const { data } = await api.post(Endpoints.orders.create, body);
-  return data as OrderDetail;
+  const { data } = await api.post<OrderCreated>(Endpoints.orders.create, body);
+  return data;
 }
 
 export async function cancelOrder(id: string) {
