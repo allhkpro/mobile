@@ -33,9 +33,9 @@ export default function SecurityScreen() {
 
   async function fetchSiteStatus(home_id: string) {
     try {
-      const { data } = await api.get<SiteStatus>(Endpoints.sites.status, {
-        headers: { "X-Home-Id": home_id },
-      });
+      const { data } = await api.get<SiteStatus>(
+        `${Endpoints.sites.status}?home_id=${home_id}`,
+      );
       setSiteStatus(data);
     } catch (e) {
       if (axios.isAxiosError(e) && e.response?.status === 404) {
