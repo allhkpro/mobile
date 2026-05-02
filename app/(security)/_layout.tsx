@@ -1,10 +1,11 @@
 import { Stack } from "expo-router";
+import { Colors } from "../../constants/theme";
 
 export default function SecurityLayout() {
   return (
     <Stack
       screenOptions={{
-        headerStyle: { backgroundColor: "#0A0A0B" },
+        headerStyle: { backgroundColor: Colors.background ?? "#030306" },
         headerTintColor: "#fff",
         headerShadowVisible: false,
       }}

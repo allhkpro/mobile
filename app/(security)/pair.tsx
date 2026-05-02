@@ -16,6 +16,7 @@ import {
   DiscoveredSite,
   registerSite,
   pushSetup,
+  rotateSiteToken,
 } from "../../services/sitePairing";
 import { Colors } from "../../constants/theme";
 
@@ -114,7 +115,21 @@ export default function PairScreen() {
             setSubmitting(true);
             setStage("confirm");
             try {
-              const reg = await registerSite(homeId, selected.device_id);
+              let reg;
+              try {
+                reg = await registerSite(homeId, selected.device_id);
+              } catch (e: any) {
+                // If a site already exists for this home (409), the user is
+                // retrying after a previous pushSetup failure. Rotate the
+                // token instead — gets a fresh secret AND invalidates the
+                // stale one we issued before.
+                const status = e?.response?.status;
+                if (status === 409) {
+                  reg = await rotateSiteToken(homeId);
+                } else {
+                  throw e;
+                }
+              }
               await pushSetup({
                 ip: selected.ip,
                 port: selected.port,
@@ -172,12 +187,12 @@ export default function PairScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { padding: 20, backgroundColor: "#0A0A0B", flexGrow: 1 },
+  container: { padding: 20, backgroundColor: Colors.background ?? "#030306", flexGrow: 1 },
   center: {
     flex: 1,
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: "#0A0A0B",
+    backgroundColor: Colors.background ?? "#030306",
   },
   h1: { color: "#fff", fontSize: 24, fontWeight: "700", marginTop: 24, marginBottom: 8 },
   muted: { color: "rgba(255,255,255,0.5)", fontSize: 14 },

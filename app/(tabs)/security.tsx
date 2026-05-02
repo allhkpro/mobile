@@ -23,7 +23,7 @@ interface SiteStatus {
 export default function SecurityScreen() {
   const homeId = useAuthStore((s) => s.currentHomeId);
   const { items, cursor, loading, filter, loadFirstPage, loadNextPage, setFilter } = useAlertsStore();
-  const [siteStatus, setSiteStatus] = useState<SiteStatus | null>(null);
+  const [siteStatus, setSiteStatus] = useState<SiteStatus | null | undefined>(undefined);
 
   useEffect(() => {
     if (!homeId) return;
@@ -39,8 +39,9 @@ export default function SecurityScreen() {
       setSiteStatus(data);
     } catch (e) {
       if (axios.isAxiosError(e) && e.response?.status === 404) {
-        setSiteStatus(null);  // no site registered
+        setSiteStatus(null);  // explicit null = backend confirms no site → show CTA
       }
+      // For other errors (network, 5xx), leave siteStatus as is — don't flicker the CTA
     }
   }
 

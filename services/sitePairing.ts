@@ -26,6 +26,13 @@ export async function registerSite(home_id: string, name = "home-zhitong") {
   return data;
 }
 
+export async function rotateSiteToken(home_id: string) {
+  const { data } = await api.post<RegisterSiteResponse>(
+    `/api/v1/sites/rotate-token?home_id=${home_id}`,
+  );
+  return data;
+}
+
 export async function pushSetup(args: {
   ip: string;
   port: number;
