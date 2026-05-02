@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { View, Text, FlatList, RefreshControl, StyleSheet, ActivityIndicator } from "react-native";
+import { View, Text, FlatList, RefreshControl, StyleSheet, ActivityIndicator, Pressable } from "react-native";
 import { router } from "expo-router";
 import axios from "axios";
 import api from "../../services/api";
@@ -52,6 +52,27 @@ export default function SecurityScreen() {
     );
   }
 
+  // Show pairing CTA when home has no site bound
+  if (siteStatus === null) {
+    return (
+      <View style={styles.container}>
+        <View style={styles.emptySite}>
+          <Text style={styles.emptySiteIcon}>📷</Text>
+          <Text style={styles.emptySiteTitle}>还没有摄像头主机</Text>
+          <Text style={styles.emptySiteSub}>
+            装上智瞳主机即可看到家里的告警时间线
+          </Text>
+          <Pressable
+            style={styles.emptySiteBtn}
+            onPress={() => router.push("/(security)/pair")}
+          >
+            <Text style={styles.emptySiteBtnText}>+ 添加摄像头主机</Text>
+          </Pressable>
+        </View>
+      </View>
+    );
+  }
+
   return (
     <View style={styles.container}>
       <SiteStatusStrip
@@ -92,4 +113,26 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: Colors.background ?? "#000", paddingTop: 60 },
   empty: { flex: 1, alignItems: "center", justifyContent: "center", padding: 40 },
   emptyText: { color: Colors.textSecondary ?? "#8E8E93", fontSize: 14 },
+  emptySite: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    padding: 40,
+    gap: 12,
+  },
+  emptySiteIcon: { fontSize: 48 },
+  emptySiteTitle: { color: "#fff", fontSize: 18, fontWeight: "600" },
+  emptySiteSub: {
+    color: "rgba(255,255,255,0.5)",
+    fontSize: 14,
+    textAlign: "center",
+  },
+  emptySiteBtn: {
+    marginTop: 24,
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+    backgroundColor: Colors.cyan ?? "#0A84FF",
+    borderRadius: 12,
+  },
+  emptySiteBtnText: { color: "#fff", fontWeight: "600" },
 });
