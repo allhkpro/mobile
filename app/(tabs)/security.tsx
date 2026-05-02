@@ -86,7 +86,10 @@ export default function SecurityScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: Colors.background ?? "#000" },
+  // paddingTop: 60 matches the home tab convention (mobile/app/(tabs)/index.tsx)
+  // — manually clears the iPhone status bar / Dynamic Island. Without this, the
+  // SiteStatusStrip overlaps the system clock.
+  container: { flex: 1, backgroundColor: Colors.background ?? "#000", paddingTop: 60 },
   empty: { flex: 1, alignItems: "center", justifyContent: "center", padding: 40 },
   emptyText: { color: Colors.textSecondary ?? "#8E8E93", fontSize: 14 },
 });

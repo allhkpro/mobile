@@ -17,7 +17,15 @@ interface Props {
 
 export default function AlertFilterBar({ active, onChange }: Props) {
   return (
-    <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.container}>
+    <ScrollView
+      horizontal
+      showsHorizontalScrollIndicator={false}
+      contentContainerStyle={styles.container}
+      // flexGrow:0 + explicit height prevents the horizontal ScrollView from
+      // expanding to fill remaining vertical space in a flex column parent
+      // (which would stretch the chips into tall vertical bars).
+      style={styles.scrollView}
+    >
       {FILTERS.map((f) => {
         const isActive = active === f.value;
         return (
@@ -35,7 +43,8 @@ export default function AlertFilterBar({ active, onChange }: Props) {
 }
 
 const styles = StyleSheet.create({
-  container: { paddingHorizontal: 12, paddingVertical: 10, gap: 8 },
+  scrollView: { flexGrow: 0 },
+  container: { paddingHorizontal: 12, paddingVertical: 10, gap: 8, alignItems: "center" },
   chip: {
     paddingHorizontal: 14,
     paddingVertical: 6,
