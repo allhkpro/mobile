@@ -231,7 +231,15 @@ export default function HomeScreen() {
       <View style={styles.scenesSection}>
         <View style={styles.scenesHeader}>
           <Text style={styles.sectionTitle}>场景</Text>
-          <Text style={styles.scenesManage}>管理 ›</Text>
+          <View style={{ flexDirection: "row", gap: 14 }}>
+            <Text
+              style={styles.scenesManage}
+              onPress={() => router.push("/(marketplace)/")}
+            >
+              + 从市场
+            </Text>
+            <Text style={styles.scenesManage}>管理 ›</Text>
+          </View>
         </View>
         <View style={styles.scenesRow}>
           {MOCK_SCENES.map((sc) => (
