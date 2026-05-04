@@ -12,11 +12,12 @@ import { useAuthStore } from "../../stores/auth";
 import { useHomeStore, Room } from "../../stores/home";
 import { getDashboard, updateSuggestion } from "../../services/dashboard";
 import { listRooms } from "../../services/rooms";
-import { listOrders } from "../../services/orders";
+import { listOrders, OrderListItem as OrderType } from "../../services/orders";
 import { wsClient } from "../../services/websocket";
 import { Colors } from "../../constants/theme";
 import { Icon } from "../../components/ui/Icon";
 import { ServiceEntryCard } from "../../components/service/ServiceEntryCard";
+import { OrderListItem } from "../../components/service/OrderListItem";
 
 // ─── Icon name map ───────────────────────────────────────────────────────────
 
@@ -59,6 +60,7 @@ export default function HomeScreen() {
   const { dashboard, setDashboard, rooms, setRooms } = useHomeStore();
   const [refreshing, setRefreshing] = useState(false);
   const [activeOrderCount, setActiveOrderCount] = useState(0);
+  const [recentOrders, setRecentOrders] = useState<OrderType[]>([]);
   const [time, setTime] = useState("");
   const [greeting, setGreeting] = useState("");
 
@@ -99,6 +101,9 @@ export default function HomeScreen() {
       ]);
       setDashboard(dash);
       setRooms(roomList);
+      // backend already returns orders newest-first (created_at desc) — first 2
+      // make a tight "最近工单" widget without overwhelming the home tab.
+      setRecentOrders(ordersResp.items.slice(0, 2));
       const active = ordersResp.items.filter(
         (o) => o.status === "pending" || o.status === "in_progress"
       ).length;
@@ -289,6 +294,30 @@ export default function HomeScreen() {
           </TouchableOpacity>
         ))}
       </View>
+
+      {/* ── Recent orders (only when ≥1 exists; spec says dashboard
+            shouldn't be just badges — the user should see the actual
+            most-recent orders without bouncing to the service tab) ── */}
+      {recentOrders.length > 0 && (
+        <View style={styles.recentOrdersSection}>
+          <View style={styles.recentOrdersHeader}>
+            <Text style={styles.sectionTitle}>最近工单</Text>
+            <TouchableOpacity
+              onPress={() => router.push("/(service)/")}
+              activeOpacity={0.6}
+            >
+              <Text style={styles.recentOrdersAll}>全部 ›</Text>
+            </TouchableOpacity>
+          </View>
+          {recentOrders.map((o) => (
+            <OrderListItem
+              key={o.id}
+              order={o}
+              onPress={() => router.push(`/(service)/${o.id}`)}
+            />
+          ))}
+        </View>
+      )}
 
       {/* ── Service entry ── */}
       <ServiceEntryCard
@@ -550,5 +579,21 @@ const styles = StyleSheet.create({
   roomChevron: {
     fontSize: 14,
     color: "rgba(255,255,255,0.12)",
+  },
+
+  // Recent orders widget (above service entry)
+  recentOrdersSection: {
+    marginTop: 16,
+    marginBottom: 4,
+  },
+  recentOrdersHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 10,
+  },
+  recentOrdersAll: {
+    fontSize: 12,
+    color: Colors.t3,
   },
 });
