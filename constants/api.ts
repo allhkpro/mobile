@@ -42,6 +42,13 @@ export const Endpoints = {
   scenes: (homeId: string) => `/api/v1/homes/${homeId}/scenes`,
   sceneExecute: (sceneId: string) => `/api/v1/scenes/${sceneId}/execute`,
   sceneAIGenerate: "/api/v1/scenes/ai-generate",
+  marketplace: {
+    skills: "/api/v1/skills",
+    skillDetail: (id: string) => `/api/v1/skills/${id}`,
+    aiGenerate: "/api/v1/skills/ai-generate",
+    installations: (homeId: string) => `/api/v1/homes/${homeId}/installations`,
+    uninstall: (id: string) => `/api/v1/installations/${id}`,
+  },
   chat: "/api/v1/ai/chat",
   chatHistory: "/api/v1/ai/chat/history",
   floorplan: (homeId: string) => `/api/v1/homes/${homeId}/floorplan`,
