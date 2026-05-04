@@ -6,7 +6,7 @@ import { Colors } from "../constants/theme";
 import { registerForPushAsync, setupPushDeepLink } from "../services/push";
 
 export default function RootLayout() {
-  const { token, loadToken } = useAuthStore();
+  const { token, loadToken, fetchProfile } = useAuthStore();
   const [loading, setLoading] = useState(true);
   const segments = useSegments();
   const router = useRouter();
@@ -26,6 +26,14 @@ export default function RootLayout() {
       router.replace("/(tabs)");
     }
   }, [token, segments, loading]);
+
+  // Bootstrap profile + currentHomeId at root level so deep links to any tab /
+  // alert / pair screen don't show the !homeId fallback. Previously this only
+  // fired in (tabs)/index.tsx::useEffect, which never runs when the app cold-
+  // starts via APNs deep link straight to /alert/[id] or /security.
+  useEffect(() => {
+    if (token) fetchProfile().catch(() => {});
+  }, [token]);
 
   useEffect(() => {
     // Fire-and-forget permission request + token registration

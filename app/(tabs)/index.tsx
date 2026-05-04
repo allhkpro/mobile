@@ -55,7 +55,7 @@ const MOCK_SCENES = [
 
 export default function HomeScreen() {
   const router = useRouter();
-  const { currentHomeId, profile, fetchProfile } = useAuthStore();
+  const { currentHomeId, profile } = useAuthStore();
   const { dashboard, setDashboard, rooms, setRooms } = useHomeStore();
   const [refreshing, setRefreshing] = useState(false);
   const [activeOrderCount, setActiveOrderCount] = useState(0);
@@ -77,10 +77,6 @@ export default function HomeScreen() {
     update();
     const iv = setInterval(update, 30000);
     return () => clearInterval(iv);
-  }, []);
-
-  useEffect(() => {
-    fetchProfile();
   }, []);
 
   useEffect(() => {

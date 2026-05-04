@@ -1,15 +1,20 @@
 // Production URL is injected at build time via EAS (see mobile/eas.json env block).
-// Falls back to a placeholder that will obviously fail if the env var wasn't set —
-// prevents silent misconfiguration.
-const PROD_BASE = process.env.EXPO_PUBLIC_API_BASE_URL ?? "https://api.smarthome.com";
+// Falls back to the real prod URL so misconfigured prod builds at least hit
+// the right host — kept as a known-correct value, not the old placeholder.
+const PROD_BASE = process.env.EXPO_PUBLIC_API_BASE_URL ?? "https://api.aiknx.com";
 
-export const BASE_URL = __DEV__
-  ? "http://192.168.0.116:8000"
-  : PROD_BASE;
+// Dev URL: defaults to localhost (works for iOS Simulator + Android Emulator
+// host-loopback). For a real iPhone testing via Expo Go on the same WiFi,
+// set EXPO_PUBLIC_DEV_API_BASE=http://<your-LAN-IP>:8000 in your shell before
+// running `npx expo start`.
+const DEV_BASE = process.env.EXPO_PUBLIC_DEV_API_BASE ?? "http://localhost:8000";
 
-export const WS_URL = __DEV__
-  ? "ws://192.168.0.116:8000"
-  : PROD_BASE.replace(/^https?:/, (m) => (m === "https:" ? "wss:" : "ws:"));
+const ACTIVE_BASE = __DEV__ ? DEV_BASE : PROD_BASE;
+
+export const BASE_URL = ACTIVE_BASE;
+export const WS_URL = ACTIVE_BASE.replace(/^https?:/, (m) =>
+  m === "https:" ? "wss:" : "ws:"
+);
 
 export const Endpoints = {
   auth: {
@@ -19,6 +24,7 @@ export const Endpoints = {
     switchRole: "/api/v1/auth/switch-role",
     refresh: "/api/v1/auth/refresh",
     me: "/api/v1/auth/me",
+    deleteAccount: "/api/v1/auth/delete-account",
   },
   dashboard: (homeId: string) => `/api/v1/homes/${homeId}/dashboard`,
   orders: {
