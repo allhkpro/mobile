@@ -1,6 +1,7 @@
 import { Slot, useRouter, useSegments } from "expo-router";
 import { useEffect, useState } from "react";
 import { View, ActivityIndicator, StyleSheet } from "react-native";
+import * as Linking from "expo-linking";
 import { useAuthStore } from "../stores/auth";
 import { Colors } from "../constants/theme";
 import { registerForPushAsync, setupPushDeepLink } from "../services/push";
@@ -40,6 +41,23 @@ export default function RootLayout() {
     registerForPushAsync().catch(() => {});
     // Deep link listener
     const sub = setupPushDeepLink();
+    return () => sub.remove();
+  }, []);
+
+  // OAuth callback deep link handler: aiknx://oauth/<provider>?code=...
+  useEffect(() => {
+    const sub = Linking.addEventListener("url", ({ url }) => {
+      const parsed = Linking.parse(url);
+      if (parsed.hostname === "oauth") {
+        const provider = (parsed.path ?? "").replace(/^\//, "");
+        const code = parsed.queryParams?.code as string | undefined;
+        if (provider && code) {
+          router.push(
+            `/(marketplace)/providers/${provider}?oauth_code=${encodeURIComponent(code)}` as any,
+          );
+        }
+      }
+    });
     return () => sub.remove();
   }, []);
 

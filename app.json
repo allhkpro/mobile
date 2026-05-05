@@ -3,7 +3,10 @@
     "name": "AI Smart Home",
     "slug": "ai-smart-home",
     "version": "0.3.0",
-    "scheme": "smarthome",
+    "scheme": [
+      "smarthome",
+      "aiknx"
+    ],
     "platforms": [
       "ios"
     ],
