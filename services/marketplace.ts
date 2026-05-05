@@ -5,12 +5,19 @@ export type SkillSource = "official" | "ai_generated";
 
 export interface Skill {
   id: string;
+  kind?: "skill" | "provider";
   name: string;
   description: string;
   icon: string;
   category: string;
   source: SkillSource;
   created_at: string;
+  provider_meta?: {
+    key: string;
+    auth_kind: "none" | "oauth2" | "apikey" | "lan_pair";
+    connection_status: string | null;
+    connection_id: string | null;
+  };
 }
 
 export interface SkillDetail extends Skill {
@@ -30,10 +37,14 @@ export interface Installation {
 export async function listSkills(opts?: {
   category?: string;
   source?: "official" | "mine";
+  kind?: "skill" | "provider" | "all";
+  home_id?: string;
 }): Promise<Skill[]> {
   const params: Record<string, string> = {};
   if (opts?.category) params.category = opts.category;
   if (opts?.source) params.source = opts.source;
+  if (opts?.kind) params.kind = opts.kind;
+  if (opts?.home_id) params.home_id = opts.home_id;
   const { data } = await api.get<Skill[]>(Endpoints.marketplace.skills, { params });
   return data;
 }
