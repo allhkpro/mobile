@@ -16,6 +16,7 @@ import {
   completeConnect,
   listConnections,
   disconnect,
+  syncConnection,
   RegisteredProvider,
   ProviderConnection,
 } from "../../../services/providers";
@@ -83,12 +84,14 @@ export default function ConnectionWizard() {
         setStage("auth");
         await Linking.openURL(result.auth_url);
       } else if (result.immediate_connection_id) {
-        // Virtual: jump to discover/done
+        // Virtual: trigger sync to import devices, then jump to done
         setStage("discovering");
+        const syncResult = await syncConnection(result.immediate_connection_id);
+        // Re-fetch connection to read fresh device_count + status
         const conns = await listConnections(homeId);
         const conn = conns.find((c) => c.provider === key);
         setExisting(conn ?? null);
-        setDeviceCount(conn?.device_count ?? 0);
+        setDeviceCount(syncResult.device_count);
         setStage("done");
       } else if (result.challenge) {
         // LAN: show challenge prompt — v1 stub: just alert, real impl in v2
