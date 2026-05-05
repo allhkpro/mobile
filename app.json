@@ -26,7 +26,8 @@
         "NSCameraUsageDescription": "用于工程师记录施工现场和扫描设备二维码。",
         "NSPhotoLibraryUsageDescription": "用于选择和上传施工现场照片。",
         "NSPhotoLibraryAddUsageDescription": "用于保存设备快照到相册。",
-        "NSMicrophoneUsageDescription": "用于语音对话和现场语音记录。",
+        "NSMicrophoneUsageDescription": "用于录制你的描述并生成自动化场景",
+        "NSSpeechRecognitionUsageDescription": "把语音转成文字喂给 AI 生成器",
         "NSLocalNetworkUsageDescription": "用于发现和连接本地 KNX 智能家居网关。",
         "NSBonjourServices": [
           "_knx._tcp",
@@ -37,7 +38,8 @@
     },
     "plugins": [
       "expo-router",
-      "expo-video"
+      "expo-video",
+      "expo-speech-recognition"
     ],
     "experiments": {
       "typedRoutes": true

@@ -1,6 +1,10 @@
 import { useState } from "react";
 import { ScrollView, View, Text, TextInput, Pressable, StyleSheet, ActivityIndicator, Alert } from "react-native";
 import { useRouter } from "expo-router";
+import {
+  ExpoSpeechRecognitionModule,
+  useSpeechRecognitionEvent,
+} from "expo-speech-recognition";
 import { aiGenerateSkill, getSkill, installSkill, SkillDetail } from "../../services/marketplace";
 import { useAuthStore } from "../../stores/auth";
 import { Colors } from "../../constants/theme";
@@ -20,6 +24,36 @@ export default function GenerateWizard() {
   const [prompt, setPrompt] = useState("");
   const [draft, setDraft] = useState<SkillDetail | null>(null);
   const [installing, setInstalling] = useState(false);
+  const [recording, setRecording] = useState(false);
+
+  useSpeechRecognitionEvent("result", (event) => {
+    const transcript = event.results?.[0]?.transcript ?? "";
+    if (transcript) {
+      setPrompt((p) => (p ? `${p} ${transcript}` : transcript));
+    }
+  });
+
+  useSpeechRecognitionEvent("end", () => {
+    setRecording(false);
+  });
+
+  const startRec = async () => {
+    const perm = await ExpoSpeechRecognitionModule.requestPermissionsAsync();
+    if (!perm.granted) {
+      Alert.alert("权限被拒", "请到设置开启麦克风 + 语音识别权限");
+      return;
+    }
+    setRecording(true);
+    ExpoSpeechRecognitionModule.start({
+      lang: "zh-CN",
+      continuous: false,
+      interimResults: false,
+    });
+  };
+
+  const stopRec = () => {
+    ExpoSpeechRecognitionModule.stop();
+  };
 
   const onGenerate = async () => {
     if (!homeId || prompt.length < 2) return;
@@ -91,14 +125,23 @@ export default function GenerateWizard() {
       {PLACEHOLDERS.map((p) => (
         <Text key={p} style={s.example}>· {p}</Text>
       ))}
-      <TextInput
-        style={s.input}
-        multiline
-        placeholder="用一两句话描述..."
-        placeholderTextColor={Colors.t3}
-        value={prompt}
-        onChangeText={setPrompt}
-      />
+      <View style={{ position: "relative" }}>
+        <TextInput
+          style={s.input}
+          multiline
+          placeholder="用一两句话描述..."
+          placeholderTextColor={Colors.t3}
+          value={prompt}
+          onChangeText={setPrompt}
+        />
+        <Pressable
+          style={s.micBtn}
+          onPressIn={startRec}
+          onPressOut={stopRec}
+        >
+          <Text style={{ fontSize: 24 }}>{recording ? "🔴" : "🎙️"}</Text>
+        </Pressable>
+      </View>
       <Pressable
         style={[s.btnPrimary, prompt.length < 2 && { opacity: 0.4 }]}
         onPress={onGenerate}
@@ -138,4 +181,10 @@ const s = StyleSheet.create({
   bigIcon: { fontSize: 64, textAlign: "center", marginVertical: 16 },
   name: { color: Colors.t1, fontSize: 22, fontWeight: "700", textAlign: "center" },
   desc: { color: Colors.t2, fontSize: 13, textAlign: "center", marginTop: 8 },
+  micBtn: {
+    position: "absolute", right: 8, bottom: 8,
+    width: 48, height: 48, borderRadius: 24,
+    backgroundColor: Colors.card, borderWidth: 1, borderColor: Colors.border,
+    alignItems: "center", justifyContent: "center",
+  },
 });
