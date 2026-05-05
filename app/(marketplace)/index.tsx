@@ -3,31 +3,47 @@ import { ScrollView, View, Text, Pressable, StyleSheet, RefreshControl } from "r
 import { useFocusEffect, useRouter } from "expo-router";
 import { LinearGradient } from "expo-linear-gradient";
 import { listSkills, listInstallations, Skill } from "../../services/marketplace";
+import { listConnections } from "../../services/providers";
 import { useAuthStore } from "../../stores/auth";
 import { Colors } from "../../constants/theme";
+import { ProviderCard } from "../../components/marketplace/ProviderCard";
 
 const CATEGORIES = ["全部", "晚安", "早起", "节能", "氛围", "安防"];
+
+const KIND_TABS = [
+  { key: "all" as const, label: "全部" },
+  { key: "skill" as const, label: "场景包" },
+  { key: "provider" as const, label: "接设备" },
+];
 
 export default function MarketplaceHome() {
   const router = useRouter();
   const homeId = useAuthStore((s) => s.profile?.homes[0]?.id);
+  const [kind, setKind] = useState<"all" | "skill" | "provider">("all");
   const [category, setCategory] = useState<string>("全部");
   const [skills, setSkills] = useState<Skill[]>([]);
   const [installedCount, setInstalledCount] = useState(0);
+  const [connectedCount, setConnectedCount] = useState(0);
   const [refreshing, setRefreshing] = useState(false);
 
   const load = useCallback(async () => {
     try {
-      const [list, installed] = await Promise.all([
-        listSkills({ category: category === "全部" ? undefined : category }),
+      const [list, installed, conns] = await Promise.all([
+        listSkills({
+          kind,
+          category: kind === "provider" || category === "全部" ? undefined : category,
+          home_id: homeId,
+        }),
         homeId ? listInstallations(homeId) : Promise.resolve([]),
+        homeId ? listConnections(homeId) : Promise.resolve([]),
       ]);
       setSkills(list);
       setInstalledCount(installed.length);
+      setConnectedCount(conns.length);
     } finally {
       setRefreshing(false);
     }
-  }, [category, homeId]);
+  }, [kind, category, homeId]);
 
   useFocusEffect(useCallback(() => { load(); }, [load]));
 
@@ -43,9 +59,15 @@ export default function MarketplaceHome() {
         />
       }
     >
-      {/* Top: installed chip */}
-      <View style={{ flexDirection: "row", marginBottom: 12 }}>
+      {/* Top: connected + installed chips */}
+      <View style={{ flexDirection: "row", marginBottom: 12, gap: 8 }}>
         <View style={{ flex: 1 }} />
+        <Pressable
+          style={s.installedChip}
+          onPress={() => router.push("/(marketplace)/connections")}
+        >
+          <Text style={s.installedChipText}>已接 {connectedCount}</Text>
+        </Pressable>
         <Pressable
           style={s.installedChip}
           onPress={() => router.push("/(marketplace)/installed")}
@@ -69,26 +91,43 @@ export default function MarketplaceHome() {
         </LinearGradient>
       </Pressable>
 
-      {/* Category chips */}
-      <ScrollView horizontal showsHorizontalScrollIndicator={false}
-                  style={{ marginVertical: 14 }}>
-        {CATEGORIES.map((c) => (
-          <Pressable key={c} onPress={() => setCategory(c)}
-                     style={[s.chip, category === c && s.chipActive]}>
-            <Text style={[s.chipText, category === c && s.chipTextActive]}>{c}</Text>
+      {/* Kind chips (first row) */}
+      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: 8 }}>
+        {KIND_TABS.map((k) => (
+          <Pressable key={k.key} onPress={() => setKind(k.key)}
+                     style={[s.chip, kind === k.key && s.chipActive]}>
+            <Text style={[s.chipText, kind === k.key && s.chipTextActive]}>{k.label}</Text>
           </Pressable>
         ))}
       </ScrollView>
 
+      {/* Category chips (only for skill kinds; hide on provider chip selected) */}
+      {kind !== "provider" && (
+        <ScrollView horizontal showsHorizontalScrollIndicator={false}
+                    style={{ marginVertical: 14 }}>
+          {CATEGORIES.map((c) => (
+            <Pressable key={c} onPress={() => setCategory(c)}
+                       style={[s.chip, category === c && s.chipActive]}>
+              <Text style={[s.chipText, category === c && s.chipTextActive]}>{c}</Text>
+            </Pressable>
+          ))}
+        </ScrollView>
+      )}
+
       {/* Grid: 2-column */}
       <View style={s.grid}>
         {skills.map((sk) => (
-          <Pressable key={sk.id} style={s.card}
-                     onPress={() => router.push(`/(marketplace)/${sk.id}`)}>
-            <Text style={s.cardIcon}>{sk.icon}</Text>
-            <Text style={s.cardName} numberOfLines={1}>{sk.name}</Text>
-            <Text style={s.cardCat}>{sk.category}</Text>
-          </Pressable>
+          sk.kind === "provider"
+            ? <ProviderCard
+                key={sk.id} item={sk}
+                onPress={() => router.push(`/(marketplace)/providers/${sk.provider_meta?.key}`)}
+              />
+            : <Pressable key={sk.id} style={s.card}
+                         onPress={() => router.push(`/(marketplace)/${sk.id}`)}>
+                <Text style={s.cardIcon}>{sk.icon}</Text>
+                <Text style={s.cardName} numberOfLines={1}>{sk.name}</Text>
+                <Text style={s.cardCat}>{sk.category}</Text>
+              </Pressable>
         ))}
       </View>
     </ScrollView>
