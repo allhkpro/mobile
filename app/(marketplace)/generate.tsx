@@ -1,13 +1,25 @@
 import { useState } from "react";
 import { ScrollView, View, Text, TextInput, Pressable, StyleSheet, ActivityIndicator, Alert } from "react-native";
 import { useRouter } from "expo-router";
-import {
-  ExpoSpeechRecognitionModule,
-  useSpeechRecognitionEvent,
-} from "expo-speech-recognition";
 import { aiGenerateSkill, getSkill, installSkill, SkillDetail } from "../../services/marketplace";
 import { useAuthStore } from "../../stores/auth";
 import { Colors } from "../../constants/theme";
+
+// Runtime-load expo-speech-recognition so missing native module (Expo Go)
+// doesn't crash app boot. Real EAS builds get full voice; Expo Go falls back
+// to alert-on-tap.
+let ExpoSpeechRecognitionModule: any = null;
+let _useSpeechRecognitionEvent: any = () => {};
+let _voiceAvailable = false;
+
+try {
+  const lib = require("expo-speech-recognition");
+  ExpoSpeechRecognitionModule = lib.ExpoSpeechRecognitionModule;
+  _useSpeechRecognitionEvent = lib.useSpeechRecognitionEvent;
+  _voiceAvailable = !!ExpoSpeechRecognitionModule;
+} catch {
+  // running in Expo Go — voice features disabled, app still loads
+}
 
 type Stage = "input" | "loading" | "preview";
 
@@ -26,18 +38,25 @@ export default function GenerateWizard() {
   const [installing, setInstalling] = useState(false);
   const [recording, setRecording] = useState(false);
 
-  useSpeechRecognitionEvent("result", (event) => {
+  _useSpeechRecognitionEvent("result", (event: any) => {
     const transcript = event.results?.[0]?.transcript ?? "";
     if (transcript) {
       setPrompt((p) => (p ? `${p} ${transcript}` : transcript));
     }
   });
 
-  useSpeechRecognitionEvent("end", () => {
+  _useSpeechRecognitionEvent("end", () => {
     setRecording(false);
   });
 
   const startRec = async () => {
+    if (!_voiceAvailable || !ExpoSpeechRecognitionModule) {
+      Alert.alert(
+        "语音功能不可用",
+        "Expo Go 不支持原生语音模块，请用 EAS 构建版试用",
+      );
+      return;
+    }
     const perm = await ExpoSpeechRecognitionModule.requestPermissionsAsync();
     if (!perm.granted) {
       Alert.alert("权限被拒", "请到设置开启麦克风 + 语音识别权限");
@@ -52,7 +71,9 @@ export default function GenerateWizard() {
   };
 
   const stopRec = () => {
-    ExpoSpeechRecognitionModule.stop();
+    if (ExpoSpeechRecognitionModule) {
+      ExpoSpeechRecognitionModule.stop();
+    }
   };
 
   const onGenerate = async () => {
