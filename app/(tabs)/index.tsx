@@ -6,6 +6,7 @@ import {
   StyleSheet,
   RefreshControl,
   TouchableOpacity,
+  Pressable,
 } from "react-native";
 import { useRouter } from "expo-router";
 import { useAuthStore } from "../../stores/auth";
@@ -14,6 +15,7 @@ import { getDashboard, updateSuggestion } from "../../services/dashboard";
 import { listRooms } from "../../services/rooms";
 import { listOrders, OrderListItem as OrderType } from "../../services/orders";
 import { wsClient } from "../../services/websocket";
+import { getGatewayStatus, GatewayStatus } from "../../services/gateway";
 import { Colors } from "../../constants/theme";
 import { Icon } from "../../components/ui/Icon";
 import { ServiceEntryCard } from "../../components/service/ServiceEntryCard";
@@ -63,6 +65,7 @@ export default function HomeScreen() {
   const [recentOrders, setRecentOrders] = useState<OrderType[]>([]);
   const [time, setTime] = useState("");
   const [greeting, setGreeting] = useState("");
+  const [gwStatus, setGwStatus] = useState<GatewayStatus | null>(null);
 
   // Clock tick
   useEffect(() => {
@@ -87,6 +90,13 @@ export default function HomeScreen() {
       wsClient.connect(currentHomeId);
       return () => wsClient.disconnect();
     }
+  }, [currentHomeId]);
+
+  useEffect(() => {
+    if (!currentHomeId) return;
+    getGatewayStatus(currentHomeId)
+      .then(setGwStatus)
+      .catch(() => setGwStatus({ paired: false }));
   }, [currentHomeId]);
 
   const loadAll = async () => {
@@ -186,6 +196,21 @@ export default function HomeScreen() {
           设备 <Text style={{ fontWeight: "700" }}>{devicesOnline}</Text>/{devicesTotal} 在线 · <Text style={{ fontWeight: "700" }}>{devicesRunning}</Text> 运行中
         </Text>
         <Text style={styles.statusChevron}>›</Text>
+      </View>
+
+      {/* ── KNX gateway status chip ── */}
+      <View style={styles.gatewayChipRow}>
+        {gwStatus?.paired && gwStatus.status === "online" && (
+          <Text style={styles.gatewayChipOnline}>● 网关在线</Text>
+        )}
+        {gwStatus?.paired && gwStatus.status !== "online" && (
+          <Text style={styles.gatewayChipOffline}>○ 网关离线</Text>
+        )}
+        {!gwStatus?.paired && (
+          <Pressable onPress={() => router.push("/(marketplace)/pair-knx-gateway" as any)}>
+            <Text style={styles.gatewayChipUnpaired}>+ 接入 KNX 网关</Text>
+          </Pressable>
+        )}
       </View>
 
       {/* ── AI suggestion card ── */}
@@ -437,6 +462,28 @@ const styles = StyleSheet.create({
   statusChevron: {
     fontSize: 14,
     color: "rgba(255,255,255,0.12)",
+  },
+
+  // KNX gateway status chip
+  gatewayChipRow: {
+    flexDirection: "row",
+    marginBottom: 12,
+    paddingHorizontal: 4,
+  },
+  gatewayChipOnline: {
+    color: Colors.emerald,
+    fontSize: 12,
+    fontWeight: "500",
+  },
+  gatewayChipOffline: {
+    color: Colors.amber,
+    fontSize: 12,
+    fontWeight: "500",
+  },
+  gatewayChipUnpaired: {
+    color: Colors.purple,
+    fontSize: 12,
+    fontWeight: "600",
   },
 
   // AI suggestion card

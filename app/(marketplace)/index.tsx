@@ -120,7 +120,13 @@ export default function MarketplaceHome() {
           sk.kind === "provider"
             ? <ProviderCard
                 key={sk.id} item={sk}
-                onPress={() => router.push(`/(marketplace)/providers/${sk.provider_meta?.key}`)}
+                onPress={() => {
+                  if (sk.provider_meta?.key === "knx") {
+                    router.push("/(marketplace)/pair-knx-gateway" as any);
+                  } else {
+                    router.push(`/(marketplace)/providers/${sk.provider_meta?.key}` as any);
+                  }
+                }}
               />
             : <Pressable key={sk.id} style={s.card}
                          onPress={() => router.push(`/(marketplace)/${sk.id}`)}>
