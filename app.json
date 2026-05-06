@@ -31,8 +31,13 @@
         "NSLocalNetworkUsageDescription": "用于发现和连接本地 KNX 智能家居网关。",
         "NSBonjourServices": [
           "_knx._tcp",
-          "_smarthome-gateway._tcp"
-        ]
+          "_smarthome-gateway._tcp",
+          "_aiknx-gateway._tcp",
+          "_zhitong-setup._tcp"
+        ],
+        "NSAppTransportSecurity": {
+          "NSAllowsLocalNetworking": true
+        }
       },
       "associatedDomains": []
     },

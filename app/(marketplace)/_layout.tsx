@@ -16,6 +16,7 @@ export default function MarketplaceLayout() {
       <Stack.Screen name="installed" options={{ title: "已安装" }} />
       <Stack.Screen name="providers/[key]" options={{ title: "接入设备" }} />
       <Stack.Screen name="connections" options={{ title: "已接入" }} />
+      <Stack.Screen name="pair-knx-gateway" options={{ title: "接入 KNX 网关" }} />
     </Stack>
   );
 }

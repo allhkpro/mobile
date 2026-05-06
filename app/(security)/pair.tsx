@@ -33,7 +33,10 @@ export default function PairScreen() {
   const [code, setCode] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
-  const { sites, scanning } = useMDnsScan(stage === "discover");
+  const { sites, scanning } = useMDnsScan(
+    "_zhitong-setup._tcp.local.",
+    stage === "discover",
+  );
 
   if (!homeId) {
     return (
