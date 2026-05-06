@@ -74,6 +74,10 @@ export const Endpoints = {
   sites: {
     status: "/api/v1/sites/status",
   },
+  gateway: {
+    register: "/api/v1/gateway/register",
+    status: "/api/v1/gateway/status",
+  },
   engineer: {
     orders: "/api/v1/engineer/orders",
     respondOrder: (orderId: string) => `/api/v1/engineer/orders/${orderId}/respond`,
