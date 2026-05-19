@@ -50,9 +50,11 @@
       "typedRoutes": true
     },
     "extra": {
+      "router": {},
       "eas": {
-        "projectId": "REPLACE_WITH_EAS_PROJECT_ID_AFTER_eas_init"
+        "projectId": "6dfdbeed-421e-4e92-96ea-0fb5edec06b7"
       }
-    }
+    },
+    "owner": "allhkpro"
   }
 }
